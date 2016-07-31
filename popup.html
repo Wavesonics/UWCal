@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Synced</title>
+    <style>
+		body
+		{
+			margin:10px;
+			padding: 10px;
+			font-family:"Arial";
+		}
+		.center
+		{
+			vertical-align: middle;
+		}
+		#success
+		{
+			display: none;
+		}
+    </style>
+
+    <!-- JavaScript and HTML must be in separate files for security. -->
+	<script type="text/javascript" src="jquery-3.0.0.min.js"></script>
+	<!--<script type="text/javascript" src="ics.deps.min.js"></script>-->
+	<script type="text/javascript" src="ics.js"></script>
+    <script type="text/javascript" src="popup.js"></script>
+  </head>
+  <body>
+	<table id="success">
+		<tr>
+			<td class="center"><img class="center" src="images/checkMark.png" /></td>
+			<td class="center"><strong>Extracted!</strong></td>
+			<div id="message"></div>
+		</tr>
+	</table>
+	
+	<div id="config">
+		<strong>Start Date:</strong><br />
+		<input type="date" id="startDate" placeholder="Start"><br />
+		<strong>End Date:</strong><br />
+		<input type="date" id="endDate" placeholder="End"><br />
+		<button type="button" id="execute">Extract Calendar</button>
+	</div>
+  </body>
+</html>
