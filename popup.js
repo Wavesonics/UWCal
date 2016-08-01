@@ -44,7 +44,7 @@ class CalendarEvent
 	
 	isVacationDay()
 	{
-		return (this.type.startsWith("REG") && this.type.startsWith("HOL")) && this.dateIsValid();
+		return (this.type.startsWith("VAC") || this.type.startsWith("HOL")) && this.dateIsValid();
 	}
 	
 	getStartHour()
@@ -85,6 +85,7 @@ chrome.runtime.onMessage.addListener(function(request, sender)
 		var calEvents = [];
 		
 		var visibleDays = $(pageDocument).find("td.calvisibleday1");
+		
 		visibleDays.each( function( index, element )
 		{
 			var jqElem = $(element);
@@ -138,13 +139,22 @@ chrome.runtime.onMessage.addListener(function(request, sender)
 			}
 		}
 		
-		$("#success").show();
+		var calendar = cal.calendar();
+		var numEvents = cal.events().length;
 		
-		var calendar = cal.build();
-		
-		let docContent = calendar;
-		let doc = URL.createObjectURL( new Blob([docContent], {type: 'application/octet-binary'}) );
-		chrome.downloads.download({ url: doc, filename: "schedule.ics", conflictAction: 'overwrite', saveAs: true });
+		if( calendar && numEvents > 0 )
+		{
+			$("#message").text( "Extracted " + cal.events().length + " events" );
+			$("#success").show();
+			
+			let docContent = calendar;
+			let doc = URL.createObjectURL( new Blob([docContent], {type: 'application/octet-binary'}) );
+			chrome.downloads.download({ url: doc, filename: "schedule.ics", conflictAction: 'overwrite', saveAs: true });
+		}
+		else
+		{
+			$("#failure").show();
+		}
 	}
 });
 

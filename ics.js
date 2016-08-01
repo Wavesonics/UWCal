@@ -138,19 +138,6 @@ var ics = function( uidDomain, prodId ) {
             }
             saveAs(blob, filename + ext);
             return calendar;
-        },
-		
-		/**
-         * Build and return the ical contents
-         */
-        'build': function() {
-            if (calendarEvents.length < 1) {
-                return false;
-            }
-
-            var calendar = calendarStart + SEPARATOR + calendarEvents.join(SEPARATOR) + calendarEnd;
-
-            return calendar;
         }
     };
 };
