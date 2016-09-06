@@ -22,6 +22,7 @@ function trimIfString(x)
 	}
 }
 
+var hoursRegEx = /(\d\d-\d?\dh)/;
 class CalendarEvent
 {
 	constructor(date, workingHours, type)
@@ -39,7 +40,7 @@ class CalendarEvent
 	isWorkDay()
 	{
 		
-		return this.workingHours != "" && this.type && this.type.startsWith("REG") && this.dateIsValid();
+		return this.workingHours != "";// && this.type && this.type.startsWith("REG") && this.dateIsValid();
 	}
 	
 	isVacationDay()
@@ -47,11 +48,18 @@ class CalendarEvent
 		return (this.type.startsWith("VAC") || this.type.startsWith("HOL")) && this.dateIsValid();
 	}
 	
+	isWorkingHoursValid()
+	{
+		return hoursRegEx.test(this.workingHours);
+	}
+	
 	getStartHour()
 	{
 		var time = "";
 		
-		var parts = this.workingHours.split('-');
+		var match = hoursRegEx.exec(this.workingHours);
+		
+		var parts = match[0].split('-');
 		if( parts.length == 2 )
 		{
 			time = parts[0].trim();
@@ -64,7 +72,9 @@ class CalendarEvent
 	{
 		var time = "";
 		
-		var parts = this.workingHours.split('-');
+		var match = hoursRegEx.exec(this.workingHours);
+		
+		var parts = match[0].split('-');
 		if( parts.length == 2 )
 		{
 			// Remove the H at the end
@@ -84,8 +94,7 @@ chrome.runtime.onMessage.addListener(function(request, sender)
 
 		var calEvents = [];
 		
-		var visibleDays = $(pageDocument).find("td.calvisibleday1");
-		
+		var visibleDays = $(pageDocument).find("td.calvisibleday1,td.calweekend1");
 		visibleDays.each( function( index, element )
 		{
 			var jqElem = $(element);
@@ -107,14 +116,26 @@ chrome.runtime.onMessage.addListener(function(request, sender)
 			var calEvent = calEvents[i];
 			if( calEvent.date >= startDate && calEvent.date <= endDate )
 			{
-				var startHour = parseInt(calEvent.getStartHour());
-				var endHour = parseInt(calEvent.getEndHour());
+				if( calEvent.isWorkingHoursValid() )
+				{
+					var startHour = parseInt(calEvent.getStartHour());
+					var endHour = parseInt(calEvent.getEndHour());	
+				}
+				else
+				{
+					var startHour = 0;
+					var endHour = 23;	
+				}
 				
 				var subject = "Work";
 				var description = calEvent.type;
 				// University of Washington Medical Center
 				var location = "1959 NE Pacific St, Seattle, WA 98195";
-				var begin = calEvent.date.toLocaleDateString() + " " + startHour.pad(2) + ":00";
+				
+				var begin = undefined;
+				var end = undefined;
+				
+				begin = calEvent.date.toLocaleDateString() + " " + startHour.pad(2) + ":00";
 				
 				// We end on the next day
 				if( startHour > endHour )
@@ -126,13 +147,14 @@ chrome.runtime.onMessage.addListener(function(request, sender)
 					// Do some crazy date rounding to deal with changing daylight savings and such (thanks stack overflow)
 					tomorrow.setTime( tomorrow.getTime() + 12 * 1000 * 60 * 60 );
 					tomorrow.setHours(0);	
-					var end = tomorrow.toLocaleDateString() + " " + endHour.pad(2) + ":30";
+					end = tomorrow.toLocaleDateString() + " " + endHour.pad(2) + ":30";
 				}
 				// Default case where we are ending in the same day
 				else
 				{
-					var end = calEvent.date.toLocaleDateString() + " " + endHour.pad(2) + ":30";
+					end = calEvent.date.toLocaleDateString() + " " + endHour.pad(2) + ":30";
 				}
+				
 				console.log("start: " + begin);
 				console.log("end: " + end);
 				cal.addEvent(subject, description, location, begin, end);
