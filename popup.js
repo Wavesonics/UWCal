@@ -22,7 +22,7 @@ function trimIfString(x)
 	}
 }
 
-var hoursRegEx = /(\d\d-\d?\dh)/;
+var hoursRegEx = /(\d?\d-\d?\dh)/;
 class CalendarEvent
 {
 	constructor(date, workingHours, type)
