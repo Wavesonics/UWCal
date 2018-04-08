@@ -22,7 +22,8 @@ function trimIfString(x)
 	}
 }
 
-var hoursRegEx = /(\d?\d-\d?\dh)/;
+var modifierRegEx = /\+([A-Z]{3})/;
+var hoursRegEx = /(c?(\d?\d)-c?(\d?\d)h)/;
 class CalendarEvent
 {
 	constructor(date, workingHours, type)
@@ -56,32 +57,30 @@ class CalendarEvent
 	getStartHour()
 	{
 		var time = "";
-		
 		var match = hoursRegEx.exec(this.workingHours);
 		
-		var parts = match[0].split('-');
-		if( parts.length == 2 )
-		{
-			time = parts[0].trim();
-		}
-		
-		return time;
+		return match[2];
 	}
 	
 	getEndHour()
 	{
 		var time = "";
-		
 		var match = hoursRegEx.exec(this.workingHours);
-		
-		var parts = match[0].split('-');
-		if( parts.length == 2 )
+
+		return match[3];
+	}
+
+	getModifier()
+	{
+		var modifier = "";
+		if( modifierRegEx.test(this.workingHours) )
 		{
-			// Remove the H at the end
-			time = parts[1].trim().substring(0, parts[1].length-1);
+			var match = modifierRegEx.exec(this.workingHours);
+
+			modifier = match[1];
 		}
 		
-		return time;
+		return modifier;
 	}
 }
 
@@ -128,7 +127,7 @@ chrome.runtime.onMessage.addListener(function(request, sender)
 				}
 				
 				var subject = "Work";
-				var description = calEvent.type;
+				var description = calEvent.type + " + " + calEvent.getModifier();
 				// University of Washington Medical Center
 				var location = "1959 NE Pacific St, Seattle, WA 98195";
 				
